@@ -15,7 +15,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyDescriptionAttribute("Description of ExportAsciiSTL")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0+6f3b0c596b929d278415bd7d493151ef599222c7")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0+ebc853ac5b062375ed1d95aca05f2eb886cbdb9c")]
 [assembly: System.Reflection.AssemblyProductAttribute("ExportAsciiSTL")]
 [assembly: System.Reflection.AssemblyTitleAttribute("ExportAsciiSTL")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

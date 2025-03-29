@@ -126,8 +126,21 @@ namespace AsciiSTLExporter
                             m.Faces.ConvertQuadsToTriangles();
                             m.Normals.ComputeNormals();
 
-                            string baseName = category == "other" ? "other" : category.Substring(0, category.Length - 1);
+                            string baseName;
+                            switch (category)
+                            {
+                                case "roads":
+                                    baseName = "highway";
+                                    break;
+                                case "other":
+                                    baseName = "other";
+                                    break;
+                                default:
+                                    baseName = category.Substring(0, category.Length - 1);
+                                    break;
+                            }
                             string name = $"{baseName}{counter++}";
+
                             writer.WriteLine($"solid {name}");
 
                             foreach (var face in m.Faces)
