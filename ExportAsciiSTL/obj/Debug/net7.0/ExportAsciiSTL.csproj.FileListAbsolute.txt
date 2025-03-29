@@ -12,3 +12,4 @@ E:\PGL\small_scripts\ExportAsciiSTL\ExportAsciiSTL\obj\Debug\net7.0\refint\Expor
 E:\PGL\small_scripts\ExportAsciiSTL\ExportAsciiSTL\obj\Debug\net7.0\ExportAsciiSTL.pdb
 E:\PGL\small_scripts\ExportAsciiSTL\ExportAsciiSTL\obj\Debug\net7.0\ExportAsciiSTL.genruntimeconfig.cache
 E:\PGL\small_scripts\ExportAsciiSTL\ExportAsciiSTL\obj\Debug\net7.0\ref\ExportAsciiSTL.rhp
+E:\PGL\small_scripts\ExportAsciiSTL\ExportAsciiSTL\obj\Debug\net7.0\ExportAsciiSTL.sourcelink.json

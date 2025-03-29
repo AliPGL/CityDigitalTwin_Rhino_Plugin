@@ -37,20 +37,58 @@ namespace AsciiSTLExporter
 
             RhinoApp.WriteLine($"Loaded model from: {filePath}");
 
+            // Step 1: Identify all ancestor layers named "Buildings"
+            var buildingsRootLayers = new List<Layer>();
+            foreach (var layer in tempDoc.Layers)
+            {
+                var current = layer;
+                while (current != null)
+                {
+                    if (current.Name.Trim().Equals("Buildings", StringComparison.OrdinalIgnoreCase))
+                    {
+                        buildingsRootLayers.Add(layer);
+                        break;
+                    }
+                    current = tempDoc.Layers.FindId(current.ParentLayerId);
+                }
+            }
+
+            if (buildingsRootLayers.Count == 0)
+            {
+                RhinoApp.WriteLine("No ancestor layer named 'Buildings' was found.");
+                return Result.Nothing;
+            }
+
+            // Step 2: Collect all objects under those layers
             var validObjects = new List<GeometryBase>();
+
             foreach (var obj in tempDoc.Objects)
             {
-                RhinoApp.WriteLine($"Found object: {obj.ObjectType}, Layer: {tempDoc.Layers[obj.Attributes.LayerIndex].FullPath}");
+                var objLayer = tempDoc.Layers[obj.Attributes.LayerIndex];
 
-                var geo = obj.Geometry;
-                CollectGeometryRecursive(geo, tempDoc, validObjects, Transform.Identity);
+                foreach (var rootLayer in buildingsRootLayers)
+                {
+                    // Check if object's layer is a child of one of the Buildings layers
+                    var current = objLayer;
+                    while (current != null)
+                    {
+                        if (current.Id == rootLayer.Id)
+                        {
+                            RhinoApp.WriteLine($"✔ Found building object on layer: {objLayer.FullPath}");
+                            CollectGeometryRecursive(obj.Geometry, tempDoc, validObjects, Transform.Identity);
+                            break;
+                        }
+                        current = tempDoc.Layers.FindId(current.ParentLayerId);
+                    }
+                }
             }
 
             if (validObjects.Count == 0)
             {
-                RhinoApp.WriteLine("No valid geometry found to export.");
+                RhinoApp.WriteLine("No valid building geometry found to export.");
                 return Result.Nothing;
             }
+
 
             var saveDialog = new Rhino.UI.SaveFileDialog
             {
@@ -90,7 +128,7 @@ namespace AsciiSTLExporter
                         m.Faces.ConvertQuadsToTriangles();
                         m.Normals.ComputeNormals();
 
-                        writer.WriteLine($"solid object_{counter++}");
+                        writer.WriteLine($"solid building{counter++}");
 
                         foreach (var face in m.Faces)
                         {
@@ -112,7 +150,7 @@ namespace AsciiSTLExporter
                             writer.WriteLine("  endfacet");
                         }
 
-                        writer.WriteLine($"endsolid object_{counter - 1}");
+                        writer.WriteLine($"endsolid building{counter - 1}");
                     }
                 }
             }
@@ -120,6 +158,7 @@ namespace AsciiSTLExporter
             RhinoApp.WriteLine($"Exported ASCII STL to: {path}");
             return Result.Success;
         }
+
 
         private void CollectGeometryRecursive(GeometryBase geo, RhinoDoc doc, List<GeometryBase> result, Transform accumulatedTransform)
         {
