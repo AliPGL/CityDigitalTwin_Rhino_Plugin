@@ -12,9 +12,9 @@ using System.Text;
 
 namespace AsciiSTLExporter
 {
-    public class ExportAsciiSTLCommand : Rhino.Commands.Command
+    public class CityDigitalTwin_ExportAsciiSTL : Rhino.Commands.Command
     {
-        public override string EnglishName => "ExportAsciiSTL";
+        public override string EnglishName => "CDT_ExportAsciiSTL";
 
         protected override Result RunCommand(RhinoDoc doc, RunMode mode)
         {

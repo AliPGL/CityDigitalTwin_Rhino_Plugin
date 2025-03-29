@@ -1,0 +1,8 @@
+is_global = true
+build_property.RootNamespace = CityDigitalTwin_ExportAsciiSTL
+build_property.ProjectDir = E:\PGL\small_scripts\ExportAsciiSTL\ExportAsciiSTL\
+build_property.EnableComHosting = 
+build_property.EnableGeneratedComInterfaceComImportInterop = 
+build_property.CsWinRTUseWindowsUIXamlProjections = false
+build_property.EffectiveAnalysisLevelStyle = 
+build_property.EnableCodeStyleSeverity = 

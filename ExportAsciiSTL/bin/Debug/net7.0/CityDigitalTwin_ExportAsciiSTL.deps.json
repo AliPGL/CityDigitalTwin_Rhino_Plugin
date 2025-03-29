@@ -6,19 +6,19 @@
   "compilationOptions": {},
   "targets": {
     ".NETCoreApp,Version=v7.0": {
-      "ExportAsciiSTL/1.0": {
+      "CityDigitalTwin_ExportAsciiSTL/1.0": {
         "dependencies": {
           "RhinoCommon": "8.0.23304.9001"
         },
         "runtime": {
-          "ExportAsciiSTL.rhp": {}
+          "CityDigitalTwin_ExportAsciiSTL.rhp": {}
         }
       },
       "RhinoCommon/8.0.23304.9001": {}
     }
   },
   "libraries": {
-    "ExportAsciiSTL/1.0": {
+    "CityDigitalTwin_ExportAsciiSTL/1.0": {
       "type": "project",
       "serviceable": false,
       "sha512": ""

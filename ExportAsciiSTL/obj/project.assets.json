@@ -90,9 +90,9 @@
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "E:\\PGL\\small_scripts\\ExportAsciiSTL\\ExportAsciiSTL\\ExportAsciiSTL.csproj",
-      "projectName": "ExportAsciiSTL",
-      "projectPath": "E:\\PGL\\small_scripts\\ExportAsciiSTL\\ExportAsciiSTL\\ExportAsciiSTL.csproj",
+      "projectUniqueName": "E:\\PGL\\small_scripts\\ExportAsciiSTL\\ExportAsciiSTL\\CityDigitalTwin_ExportAsciiSTL.csproj",
+      "projectName": "CityDigitalTwin_ExportAsciiSTL",
+      "projectPath": "E:\\PGL\\small_scripts\\ExportAsciiSTL\\ExportAsciiSTL\\CityDigitalTwin_ExportAsciiSTL.csproj",
       "packagesPath": "C:\\Users\\alika\\.nuget\\packages\\",
       "outputPath": "E:\\PGL\\small_scripts\\ExportAsciiSTL\\ExportAsciiSTL\\obj\\",
       "projectStyle": "PackageReference",

@@ -1,0 +1,15 @@
+E:\PGL\small_scripts\ExportAsciiSTL\ExportAsciiSTL\bin\Release\net7.0\ExportAsciiSTL.deps.json
+E:\PGL\small_scripts\ExportAsciiSTL\ExportAsciiSTL\bin\Release\net7.0\ExportAsciiSTL.runtimeconfig.json
+E:\PGL\small_scripts\ExportAsciiSTL\ExportAsciiSTL\bin\Release\net7.0\ExportAsciiSTL.rhp
+E:\PGL\small_scripts\ExportAsciiSTL\ExportAsciiSTL\bin\Release\net7.0\ExportAsciiSTL.pdb
+E:\PGL\small_scripts\ExportAsciiSTL\ExportAsciiSTL\obj\Release\net7.0\ExportAsciiSTL.csproj.AssemblyReference.cache
+E:\PGL\small_scripts\ExportAsciiSTL\ExportAsciiSTL\obj\Release\net7.0\ExportAsciiSTL.GeneratedMSBuildEditorConfig.editorconfig
+E:\PGL\small_scripts\ExportAsciiSTL\ExportAsciiSTL\obj\Release\net7.0\ExportAsciiSTL.AssemblyInfoInputs.cache
+E:\PGL\small_scripts\ExportAsciiSTL\ExportAsciiSTL\obj\Release\net7.0\ExportAsciiSTL.AssemblyInfo.cs
+E:\PGL\small_scripts\ExportAsciiSTL\ExportAsciiSTL\obj\Release\net7.0\ExportAsciiSTL.csproj.CoreCompileInputs.cache
+E:\PGL\small_scripts\ExportAsciiSTL\ExportAsciiSTL\obj\Release\net7.0\ExportAsciiSTL.sourcelink.json
+E:\PGL\small_scripts\ExportAsciiSTL\ExportAsciiSTL\obj\Release\net7.0\ExportAsciiSTL.rhp
+E:\PGL\small_scripts\ExportAsciiSTL\ExportAsciiSTL\obj\Release\net7.0\refint\ExportAsciiSTL.rhp
+E:\PGL\small_scripts\ExportAsciiSTL\ExportAsciiSTL\obj\Release\net7.0\ExportAsciiSTL.pdb
+E:\PGL\small_scripts\ExportAsciiSTL\ExportAsciiSTL\obj\Release\net7.0\ExportAsciiSTL.genruntimeconfig.cache
+E:\PGL\small_scripts\ExportAsciiSTL\ExportAsciiSTL\obj\Release\net7.0\ref\ExportAsciiSTL.rhp

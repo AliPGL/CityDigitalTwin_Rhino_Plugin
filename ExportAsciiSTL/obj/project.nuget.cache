@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "tKr+ZzWaXPk=",
+  "dgSpecHash": "8HFxMOu6tg4=",
   "success": true,
-  "projectFilePath": "E:\\PGL\\small_scripts\\ExportAsciiSTL\\ExportAsciiSTL\\ExportAsciiSTL.csproj",
+  "projectFilePath": "E:\\PGL\\small_scripts\\ExportAsciiSTL\\ExportAsciiSTL\\CityDigitalTwin_ExportAsciiSTL.csproj",
   "expectedPackageFiles": [
     "C:\\Users\\alika\\.nuget\\packages\\rhinocommon\\8.0.23304.9001\\rhinocommon.8.0.23304.9001.nupkg.sha512",
     "C:\\Users\\alika\\.nuget\\packages\\microsoft.windowsdesktop.app.ref\\7.0.20\\microsoft.windowsdesktop.app.ref.7.0.20.nupkg.sha512",

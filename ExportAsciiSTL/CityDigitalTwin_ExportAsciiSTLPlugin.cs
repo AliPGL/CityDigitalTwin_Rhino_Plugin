@@ -11,15 +11,15 @@ namespace ExportAsciiSTL
     /// attributes in AssemblyInfo.cs (you might need to click "Project" ->
     /// "Show All Files" to see it in the "Solution Explorer" window).</para>
     ///</summary>
-    public class ExportAsciiSTLPlugin : Rhino.PlugIns.PlugIn
+    public class CityDigitalTwin_ExportAsciiSTLPlugin : Rhino.PlugIns.PlugIn
     {
-        public ExportAsciiSTLPlugin()
+        public CityDigitalTwin_ExportAsciiSTLPlugin()
         {
             Instance = this;
         }
 
         ///<summary>Gets the only instance of the ExportAsciiSTLPlugin plug-in.</summary>
-        public static ExportAsciiSTLPlugin Instance { get; private set; }
+        public static CityDigitalTwin_ExportAsciiSTLPlugin Instance { get; private set; }
 
         // You can override methods here to change the plug-in behavior on
         // loading and shut down, add options pages to the Rhino _Option command

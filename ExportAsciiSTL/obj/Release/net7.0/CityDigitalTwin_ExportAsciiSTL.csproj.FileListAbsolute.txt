@@ -1,0 +1,15 @@
+E:\PGL\small_scripts\ExportAsciiSTL\ExportAsciiSTL\bin\Release\net7.0\CityDigitalTwin_ExportAsciiSTL.deps.json
+E:\PGL\small_scripts\ExportAsciiSTL\ExportAsciiSTL\bin\Release\net7.0\CityDigitalTwin_ExportAsciiSTL.runtimeconfig.json
+E:\PGL\small_scripts\ExportAsciiSTL\ExportAsciiSTL\bin\Release\net7.0\CityDigitalTwin_ExportAsciiSTL.rhp
+E:\PGL\small_scripts\ExportAsciiSTL\ExportAsciiSTL\bin\Release\net7.0\CityDigitalTwin_ExportAsciiSTL.pdb
+E:\PGL\small_scripts\ExportAsciiSTL\ExportAsciiSTL\obj\Release\net7.0\CityDigitalTwin_ExportAsciiSTL.csproj.AssemblyReference.cache
+E:\PGL\small_scripts\ExportAsciiSTL\ExportAsciiSTL\obj\Release\net7.0\CityDigitalTwin_ExportAsciiSTL.GeneratedMSBuildEditorConfig.editorconfig
+E:\PGL\small_scripts\ExportAsciiSTL\ExportAsciiSTL\obj\Release\net7.0\CityDigitalTwin_ExportAsciiSTL.AssemblyInfoInputs.cache
+E:\PGL\small_scripts\ExportAsciiSTL\ExportAsciiSTL\obj\Release\net7.0\CityDigitalTwin_ExportAsciiSTL.AssemblyInfo.cs
+E:\PGL\small_scripts\ExportAsciiSTL\ExportAsciiSTL\obj\Release\net7.0\CityDigitalTwin_ExportAsciiSTL.csproj.CoreCompileInputs.cache
+E:\PGL\small_scripts\ExportAsciiSTL\ExportAsciiSTL\obj\Release\net7.0\CityDigitalTwin_ExportAsciiSTL.sourcelink.json
+E:\PGL\small_scripts\ExportAsciiSTL\ExportAsciiSTL\obj\Release\net7.0\CityDigitalTwin_ExportAsciiSTL.rhp
+E:\PGL\small_scripts\ExportAsciiSTL\ExportAsciiSTL\obj\Release\net7.0\refint\CityDigitalTwin_ExportAsciiSTL.rhp
+E:\PGL\small_scripts\ExportAsciiSTL\ExportAsciiSTL\obj\Release\net7.0\CityDigitalTwin_ExportAsciiSTL.pdb
+E:\PGL\small_scripts\ExportAsciiSTL\ExportAsciiSTL\obj\Release\net7.0\CityDigitalTwin_ExportAsciiSTL.genruntimeconfig.cache
+E:\PGL\small_scripts\ExportAsciiSTL\ExportAsciiSTL\obj\Release\net7.0\ref\CityDigitalTwin_ExportAsciiSTL.rhp

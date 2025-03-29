@@ -1,0 +1,10 @@
+E:\PGL\small_scripts\ExportAsciiSTL\ExportAsciiSTL\bin\Release\net48\ExportAsciiSTL.rhp
+E:\PGL\small_scripts\ExportAsciiSTL\ExportAsciiSTL\bin\Release\net48\ExportAsciiSTL.pdb
+E:\PGL\small_scripts\ExportAsciiSTL\ExportAsciiSTL\obj\Release\net48\ExportAsciiSTL.csproj.AssemblyReference.cache
+E:\PGL\small_scripts\ExportAsciiSTL\ExportAsciiSTL\obj\Release\net48\ExportAsciiSTL.GeneratedMSBuildEditorConfig.editorconfig
+E:\PGL\small_scripts\ExportAsciiSTL\ExportAsciiSTL\obj\Release\net48\ExportAsciiSTL.AssemblyInfoInputs.cache
+E:\PGL\small_scripts\ExportAsciiSTL\ExportAsciiSTL\obj\Release\net48\ExportAsciiSTL.AssemblyInfo.cs
+E:\PGL\small_scripts\ExportAsciiSTL\ExportAsciiSTL\obj\Release\net48\ExportAsciiSTL.csproj.CoreCompileInputs.cache
+E:\PGL\small_scripts\ExportAsciiSTL\ExportAsciiSTL\obj\Release\net48\ExportAsciiSTL.sourcelink.json
+E:\PGL\small_scripts\ExportAsciiSTL\ExportAsciiSTL\obj\Release\net48\ExportAsciiSTL.rhp
+E:\PGL\small_scripts\ExportAsciiSTL\ExportAsciiSTL\obj\Release\net48\ExportAsciiSTL.pdb
