@@ -1,0 +1,139 @@
+﻿using Eto.Forms;
+using Rhino;
+using Rhino.Commands;
+using Rhino.DocObjects;
+using Rhino.Geometry;
+using Rhino.Input;
+using Rhino.Input.Custom;
+using System;
+using System.IO;
+using System.Text;
+
+namespace AsciiSTLExporter
+{
+    public class ExportAsciiSTLCommand : Rhino.Commands.Command
+    {
+        public override string EnglishName => "ExportAsciiSTL";
+
+        protected override Result RunCommand(RhinoDoc doc, RunMode mode)
+        {
+            var openDialog = new OpenFileDialog
+            {
+                Title = "Select a 3DM file to export to ASCII STL",
+                Filters = { new FileFilter("Rhino 3D Files", ".3dm") }
+            };
+
+            if (openDialog.ShowDialog(null) != DialogResult.Ok)
+                return Result.Cancel;
+
+            string filePath = openDialog.FileName;
+
+            var tempDoc = Rhino.RhinoDoc.Open(filePath, out var errors);
+            if (tempDoc == null)
+            {
+                RhinoApp.WriteLine("Failed to open the 3DM file.");
+                return Result.Failure;
+            }
+
+            RhinoApp.WriteLine($"Loaded model from: {filePath}");
+
+            var go = new GetObject();
+            go.SetCommandPrompt("Select objects to export as ASCII STL");
+            go.GeometryFilter = ObjectType.Brep | ObjectType.Mesh | ObjectType.Extrusion | ObjectType.Surface;
+            go.GroupSelect = true;
+            go.GetMultiple(1, 0);
+            if (go.CommandResult() != Result.Success)
+                return go.CommandResult();
+
+            var path = "";
+            var saveDialog = new Rhino.UI.SaveFileDialog
+            {
+                Filter = "ASCII STL (*.stl)|*.stl",
+                DefaultExt = "stl",
+                Title = "Save ASCII STL"
+            };
+            if (!saveDialog.ShowSaveDialog())
+                return Result.Cancel;
+
+            path = saveDialog.FileName;
+            if (string.IsNullOrWhiteSpace(path))
+                return Result.Cancel;
+
+            var meshParams = MeshingParameters.Default;
+            meshParams.JaggedSeams = false;
+            meshParams.RefineGrid = true;
+            meshParams.SimplePlanes = false;
+
+            using (var writer = new StreamWriter(path, false, Encoding.ASCII))
+            {
+                writer.WriteLine("solid RhinoAsciiExport");
+
+                foreach (var objRef in go.Objects())
+                {
+                    var obj = objRef.Object();
+                    if (obj == null) continue;
+
+                    Mesh[] meshes = null;
+
+                    if (objRef.Geometry() is Mesh mesh)
+                    {
+                        meshes = new[] { mesh };
+                    }
+                    else
+                    {
+                        var brep = objRef.Geometry().Duplicate() as Brep;
+                        if (brep != null)
+                        {
+                            meshes = Mesh.CreateFromBrep(brep, meshParams);
+                        }
+                        else if (objRef.Geometry() is Extrusion extrusion)
+                        {
+                            var convertedBrep = extrusion.ToBrep();
+                            meshes = Mesh.CreateFromBrep(convertedBrep, meshParams);
+                        }
+                        else if (objRef.Geometry() is Surface surface)
+                        {
+                            var brepSurf = surface.ToBrep();
+                            meshes = Mesh.CreateFromBrep(brepSurf, meshParams);
+                        }
+                    }
+
+                    if (meshes == null) continue;
+
+                    foreach (var m in meshes)
+                    {
+                        m.UnifyNormals();
+                        m.Normals.ComputeNormals();
+                        m.Compact();
+
+                        for (int i = 0; i < m.Faces.Count; i++)
+                        {
+                            var face = m.Faces[i];
+                            if (!face.IsTriangle) continue;
+
+                            var vi = new int[] { face.A, face.B, face.C };
+                            var v0 = m.Vertices[vi[0]];
+                            var v1 = m.Vertices[vi[1]];
+                            var v2 = m.Vertices[vi[2]];
+                            var normal = Vector3d.CrossProduct(v1 - v0, v2 - v0);
+                            normal.Unitize();
+
+                            writer.WriteLine($"facet normal {normal.X} {normal.Y} {normal.Z}");
+                            writer.WriteLine("outer loop");
+                            writer.WriteLine($"vertex {v0.X} {v0.Y} {v0.Z}");
+                            writer.WriteLine($"vertex {v1.X} {v1.Y} {v1.Z}");
+                            writer.WriteLine($"vertex {v2.X} {v2.Y} {v2.Z}");
+                            writer.WriteLine("endloop");
+                            writer.WriteLine("endfacet");
+                        }
+                    }
+                }
+
+                writer.WriteLine("endsolid RhinoAsciiExport");
+            }
+
+            RhinoApp.WriteLine($"Exported ASCII STL to: {path}");
+            return Result.Success;
+        }
+    }
+}
