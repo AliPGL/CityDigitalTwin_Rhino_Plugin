@@ -38,16 +38,16 @@ namespace AsciiSTLExporter
             RhinoApp.WriteLine($"Loaded model from: {filePath}");
 
             var categories = new[] { "buildings", "trees", "grasses", "waters", "grounds", "roads" };
+            var allCategories = new HashSet<string>(categories);
             var layerCategoryMap = new Dictionary<Guid, string>();
 
-            // Step 1: Build a map of all layers that belong to each category
             foreach (var layer in tempDoc.Layers)
             {
                 var current = layer;
                 while (current != null)
                 {
                     var lname = current.Name.Trim().ToLower();
-                    if (categories.Contains(lname))
+                    if (allCategories.Contains(lname))
                     {
                         layerCategoryMap[layer.Id] = lname;
                         break;
@@ -56,17 +56,16 @@ namespace AsciiSTLExporter
                 }
             }
 
-            // Step 2: Collect geometry and classify
             var categorizedGeometries = new Dictionary<string, List<GeometryBase>>();
-            foreach (var cat in categories)
+            foreach (var cat in allCategories)
                 categorizedGeometries[cat] = new List<GeometryBase>();
+            categorizedGeometries["other"] = new List<GeometryBase>();
 
             foreach (var obj in tempDoc.Objects)
             {
                 var layer = tempDoc.Layers[obj.Attributes.LayerIndex];
                 string category = null;
 
-                // Walk up the layer hierarchy
                 while (layer != null)
                 {
                     if (layerCategoryMap.TryGetValue(layer.Id, out category))
@@ -75,14 +74,18 @@ namespace AsciiSTLExporter
                     layer = tempDoc.Layers.FindId(layer.ParentLayerId);
                 }
 
-                if (category != null)
+                if (category != null && allCategories.Contains(category))
                 {
                     RhinoApp.WriteLine($"✔ Found {category} object on layer: {tempDoc.Layers[obj.Attributes.LayerIndex].FullPath}");
                     CollectGeometryRecursive(obj.Geometry, tempDoc, categorizedGeometries[category], Transform.Identity);
                 }
+                else
+                {
+                    RhinoApp.WriteLine($"⚠️ Found unclassified object on layer: {tempDoc.Layers[obj.Attributes.LayerIndex].FullPath} → assigned to 'other'");
+                    CollectGeometryRecursive(obj.Geometry, tempDoc, categorizedGeometries["other"], Transform.Identity);
+                }
             }
 
-            // Step 3: Save STL
             var saveDialog = new Rhino.UI.SaveFileDialog
             {
                 Filter = "ASCII STL (*.stl)|*.stl",
@@ -108,9 +111,7 @@ namespace AsciiSTLExporter
 
             using (var writer = new StreamWriter(path, false, Encoding.ASCII))
             {
-                var categoryCounters = new Dictionary<string, int>();
-
-                foreach (var category in categories)
+                foreach (var category in categorizedGeometries.Keys)
                 {
                     var geos = categorizedGeometries[category];
                     int counter = 1;
@@ -125,7 +126,8 @@ namespace AsciiSTLExporter
                             m.Faces.ConvertQuadsToTriangles();
                             m.Normals.ComputeNormals();
 
-                            string name = $"{category.Substring(0, category.Length - 1)}{counter++}";
+                            string baseName = category == "other" ? "other" : category.Substring(0, category.Length - 1);
+                            string name = $"{baseName}{counter++}";
                             writer.WriteLine($"solid {name}");
 
                             foreach (var face in m.Faces)
@@ -158,8 +160,6 @@ namespace AsciiSTLExporter
             return Result.Success;
         }
 
-
-
         private void CollectGeometryRecursive(GeometryBase geo, RhinoDoc doc, List<GeometryBase> result, Transform accumulatedTransform)
         {
             if (geo is InstanceReferenceGeometry instanceRef)
@@ -173,7 +173,6 @@ namespace AsciiSTLExporter
                     {
                         if (obj.Geometry != null)
                         {
-                            // Accumulate transformation chain
                             var xform = accumulatedTransform * instanceXform;
                             CollectGeometryRecursive(obj.Geometry, doc, result, xform);
                         }
@@ -191,23 +190,13 @@ namespace AsciiSTLExporter
         private Mesh[] ConvertToMeshes(GeometryBase geo, MeshingParameters mp)
         {
             if (geo is Mesh mesh)
-            {
                 return new[] { mesh.DuplicateMesh() };
-            }
             else if (geo is Brep brep)
-            {
                 return Mesh.CreateFromBrep(brep.DuplicateBrep(), mp);
-            }
             else if (geo is Extrusion extrusion)
-            {
-                var brepGeo = extrusion.ToBrep();
-                return Mesh.CreateFromBrep(brepGeo, mp);
-            }
+                return Mesh.CreateFromBrep(extrusion.ToBrep(), mp);
             else if (geo is Surface surface)
-            {
-                var brepGeo = surface.ToBrep();
-                return Mesh.CreateFromBrep(brepGeo, mp);
-            }
+                return Mesh.CreateFromBrep(surface.ToBrep(), mp);
 
             return null;
         }
