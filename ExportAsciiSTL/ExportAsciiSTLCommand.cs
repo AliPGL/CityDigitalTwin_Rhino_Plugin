@@ -7,6 +7,7 @@ using Rhino.Input;
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Text;
 
 namespace AsciiSTLExporter
@@ -27,7 +28,6 @@ namespace AsciiSTLExporter
                 return Result.Cancel;
 
             string filePath = openDialog.FileName;
-
             var tempDoc = RhinoDoc.Open(filePath, out var errors);
             if (tempDoc == null)
             {
@@ -37,59 +37,52 @@ namespace AsciiSTLExporter
 
             RhinoApp.WriteLine($"Loaded model from: {filePath}");
 
-            // Step 1: Identify all ancestor layers named "Buildings"
-            var buildingsRootLayers = new List<Layer>();
+            var categories = new[] { "buildings", "trees", "grasses", "waters", "grounds", "roads" };
+            var layerCategoryMap = new Dictionary<Guid, string>();
+
+            // Step 1: Build a map of all layers that belong to each category
             foreach (var layer in tempDoc.Layers)
             {
                 var current = layer;
                 while (current != null)
                 {
-                    if (current.Name.Trim().Equals("Buildings", StringComparison.OrdinalIgnoreCase))
+                    var lname = current.Name.Trim().ToLower();
+                    if (categories.Contains(lname))
                     {
-                        buildingsRootLayers.Add(layer);
+                        layerCategoryMap[layer.Id] = lname;
                         break;
                     }
                     current = tempDoc.Layers.FindId(current.ParentLayerId);
                 }
             }
 
-            if (buildingsRootLayers.Count == 0)
-            {
-                RhinoApp.WriteLine("No ancestor layer named 'Buildings' was found.");
-                return Result.Nothing;
-            }
-
-            // Step 2: Collect all objects under those layers
-            var validObjects = new List<GeometryBase>();
+            // Step 2: Collect geometry and classify
+            var categorizedGeometries = new Dictionary<string, List<GeometryBase>>();
+            foreach (var cat in categories)
+                categorizedGeometries[cat] = new List<GeometryBase>();
 
             foreach (var obj in tempDoc.Objects)
             {
-                var objLayer = tempDoc.Layers[obj.Attributes.LayerIndex];
+                var layer = tempDoc.Layers[obj.Attributes.LayerIndex];
+                string category = null;
 
-                foreach (var rootLayer in buildingsRootLayers)
+                // Walk up the layer hierarchy
+                while (layer != null)
                 {
-                    // Check if object's layer is a child of one of the Buildings layers
-                    var current = objLayer;
-                    while (current != null)
-                    {
-                        if (current.Id == rootLayer.Id)
-                        {
-                            RhinoApp.WriteLine($"✔ Found building object on layer: {objLayer.FullPath}");
-                            CollectGeometryRecursive(obj.Geometry, tempDoc, validObjects, Transform.Identity);
-                            break;
-                        }
-                        current = tempDoc.Layers.FindId(current.ParentLayerId);
-                    }
+                    if (layerCategoryMap.TryGetValue(layer.Id, out category))
+                        break;
+
+                    layer = tempDoc.Layers.FindId(layer.ParentLayerId);
+                }
+
+                if (category != null)
+                {
+                    RhinoApp.WriteLine($"✔ Found {category} object on layer: {tempDoc.Layers[obj.Attributes.LayerIndex].FullPath}");
+                    CollectGeometryRecursive(obj.Geometry, tempDoc, categorizedGeometries[category], Transform.Identity);
                 }
             }
 
-            if (validObjects.Count == 0)
-            {
-                RhinoApp.WriteLine("No valid building geometry found to export.");
-                return Result.Nothing;
-            }
-
-
+            // Step 3: Save STL
             var saveDialog = new Rhino.UI.SaveFileDialog
             {
                 Filter = "ASCII STL (*.stl)|*.stl",
@@ -115,42 +108,48 @@ namespace AsciiSTLExporter
 
             using (var writer = new StreamWriter(path, false, Encoding.ASCII))
             {
-                int counter = 1;
+                var categoryCounters = new Dictionary<string, int>();
 
-                foreach (var geo in validObjects)
+                foreach (var category in categories)
                 {
-                    Mesh[] meshes = ConvertToMeshes(geo, meshParams);
-                    if (meshes == null || meshes.Length == 0)
-                        continue;
+                    var geos = categorizedGeometries[category];
+                    int counter = 1;
 
-                    foreach (var m in meshes)
+                    foreach (var geo in geos)
                     {
-                        m.Faces.ConvertQuadsToTriangles();
-                        m.Normals.ComputeNormals();
+                        var meshes = ConvertToMeshes(geo, meshParams);
+                        if (meshes == null) continue;
 
-                        writer.WriteLine($"solid building{counter++}");
-
-                        foreach (var face in m.Faces)
+                        foreach (var m in meshes)
                         {
-                            if (!face.IsTriangle) continue;
+                            m.Faces.ConvertQuadsToTriangles();
+                            m.Normals.ComputeNormals();
 
-                            var A = m.Vertices[face.A];
-                            var B = m.Vertices[face.B];
-                            var C = m.Vertices[face.C];
+                            string name = $"{category.Substring(0, category.Length - 1)}{counter++}";
+                            writer.WriteLine($"solid {name}");
 
-                            var normal = Vector3d.CrossProduct(B - A, C - A);
-                            normal.Unitize();
+                            foreach (var face in m.Faces)
+                            {
+                                if (!face.IsTriangle) continue;
 
-                            writer.WriteLine($"  facet normal {normal.X} {normal.Y} {normal.Z}");
-                            writer.WriteLine("    outer loop");
-                            writer.WriteLine($"      vertex {A.X} {A.Y} {A.Z}");
-                            writer.WriteLine($"      vertex {B.X} {B.Y} {B.Z}");
-                            writer.WriteLine($"      vertex {C.X} {C.Y} {C.Z}");
-                            writer.WriteLine("    endloop");
-                            writer.WriteLine("  endfacet");
+                                var A = m.Vertices[face.A];
+                                var B = m.Vertices[face.B];
+                                var C = m.Vertices[face.C];
+
+                                var normal = Vector3d.CrossProduct(B - A, C - A);
+                                normal.Unitize();
+
+                                writer.WriteLine($"  facet normal {normal.X} {normal.Y} {normal.Z}");
+                                writer.WriteLine("    outer loop");
+                                writer.WriteLine($"      vertex {A.X} {A.Y} {A.Z}");
+                                writer.WriteLine($"      vertex {B.X} {B.Y} {B.Z}");
+                                writer.WriteLine($"      vertex {C.X} {C.Y} {C.Z}");
+                                writer.WriteLine("    endloop");
+                                writer.WriteLine("  endfacet");
+                            }
+
+                            writer.WriteLine($"endsolid {name}");
                         }
-
-                        writer.WriteLine($"endsolid building{counter - 1}");
                     }
                 }
             }
@@ -158,6 +157,7 @@ namespace AsciiSTLExporter
             RhinoApp.WriteLine($"Exported ASCII STL to: {path}");
             return Result.Success;
         }
+
 
 
         private void CollectGeometryRecursive(GeometryBase geo, RhinoDoc doc, List<GeometryBase> result, Transform accumulatedTransform)
