@@ -109,63 +109,90 @@ namespace AsciiSTLExporter
             meshParams.GridMinCount = 100;
             meshParams.GridMaxCount = 10000;
 
+            // Preprocess: apply rotation and center shift
+            Transform rotation = new Transform(0);
+            rotation.M00 = 1; rotation.M01 = 0; rotation.M02 = 0;
+            rotation.M10 = 0; rotation.M11 = 0; rotation.M12 = 1;
+            rotation.M20 = 0; rotation.M21 = -1; rotation.M22 = 0;
+            rotation.M33 = 1;
+
+            var allMeshes = new List<(Mesh mesh, string category)>();
+            foreach (var category in categorizedGeometries.Keys)
+            {
+                foreach (var geo in categorizedGeometries[category])
+                {
+                    var meshes = ConvertToMeshes(geo, meshParams);
+                    if (meshes == null) continue;
+
+                    foreach (var m in meshes)
+                    {
+                        m.Faces.ConvertQuadsToTriangles();
+                        m.Normals.ComputeNormals();
+                        m.Transform(rotation);
+                        allMeshes.Add((m, category));
+                    }
+                }
+            }
+
+            // Compute center of bounding box
+            var bbox = BoundingBox.Unset;
+            foreach (var (mesh, _) in allMeshes)
+                bbox = BoundingBox.Union(bbox, mesh.GetBoundingBox(true));
+
+            var centerShift = Transform.Translation(-bbox.Center.X, -bbox.Center.Y, -bbox.Center.Z);
+
+            // Apply center shift
+            foreach (var (mesh, _) in allMeshes)
+                mesh.Transform(centerShift);
+
+            // STL Export
             using (var writer = new StreamWriter(path, false, Encoding.ASCII))
             {
-                foreach (var category in categorizedGeometries.Keys)
+                var categoryCounters = new Dictionary<string, int>();
+
+                foreach (var (mesh, category) in allMeshes)
                 {
-                    var geos = categorizedGeometries[category];
-                    int counter = 1;
+                    if (!categoryCounters.ContainsKey(category))
+                        categoryCounters[category] = 1;
 
-                    foreach (var geo in geos)
+                    string baseName;
+                    switch (category)
                     {
-                        var meshes = ConvertToMeshes(geo, meshParams);
-                        if (meshes == null) continue;
-
-                        foreach (var m in meshes)
-                        {
-                            m.Faces.ConvertQuadsToTriangles();
-                            m.Normals.ComputeNormals();
-
-                            string baseName;
-                            switch (category)
-                            {
-                                case "roads":
-                                    baseName = "highway";
-                                    break;
-                                case "other":
-                                    baseName = "other";
-                                    break;
-                                default:
-                                    baseName = category.Substring(0, category.Length - 1);
-                                    break;
-                            }
-                            string name = $"{baseName}{counter++}";
-
-                            writer.WriteLine($"solid {name}");
-
-                            foreach (var face in m.Faces)
-                            {
-                                if (!face.IsTriangle) continue;
-
-                                var A = m.Vertices[face.A];
-                                var B = m.Vertices[face.B];
-                                var C = m.Vertices[face.C];
-
-                                var normal = Vector3d.CrossProduct(B - A, C - A);
-                                normal.Unitize();
-
-                                writer.WriteLine($"  facet normal {normal.X} {normal.Y} {normal.Z}");
-                                writer.WriteLine("    outer loop");
-                                writer.WriteLine($"      vertex {A.X} {A.Y} {A.Z}");
-                                writer.WriteLine($"      vertex {B.X} {B.Y} {B.Z}");
-                                writer.WriteLine($"      vertex {C.X} {C.Y} {C.Z}");
-                                writer.WriteLine("    endloop");
-                                writer.WriteLine("  endfacet");
-                            }
-
-                            writer.WriteLine($"endsolid {name}");
-                        }
+                        case "roads":
+                            baseName = "highway";
+                            break;
+                        case "other":
+                            baseName = "other";
+                            break;
+                        default:
+                            baseName = category.Substring(0, category.Length - 1);
+                            break;
                     }
+
+                    string name = $"{baseName}{categoryCounters[category]++}";
+                    writer.WriteLine($"solid {name}");
+
+                    foreach (var face in mesh.Faces)
+                    {
+                        if (!face.IsTriangle) continue;
+
+                        var A = mesh.Vertices[face.A];
+                        var B = mesh.Vertices[face.B];
+                        var C = mesh.Vertices[face.C];
+
+                        var normal = Vector3d.CrossProduct(B - A, C - A);
+                        normal.Unitize();
+
+                        writer.WriteLine($"  facet normal {normal.X} {normal.Y} {normal.Z}");
+                        writer.WriteLine("    outer loop");
+                        writer.WriteLine($"      vertex {A.X} {A.Y} {A.Z}");
+                        writer.WriteLine($"      vertex {B.X} {B.Y} {B.Z}");
+                        writer.WriteLine($"      vertex {C.X} {C.Y} {C.Z}");
+                        writer.WriteLine("    endloop");
+                        writer.WriteLine("  endfacet");
+                    }
+
+                    writer.WriteLine($"endsolid {name}");
                 }
             }
 
