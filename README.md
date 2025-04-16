@@ -37,7 +37,7 @@ If no matching category is found, the object is added under `"other"`.
 ## 🔧 Usage
 
 1. Open Rhino.
-2. Run the command: `ExportAsciiSTL`
+2. Run the command: `CDT_ExportAsciiSTL`
 3. Select the `.3dm` file to export.
 4. Choose the output `.stl` file path.
 5. The plugin will:
@@ -71,3 +71,4 @@ Works with nested blocks and complex layer hierarchies
 
 📬 Feedback & Contributions
 Have a feature request or want to contribute? Feel free to reach out or fork this project!
+```
