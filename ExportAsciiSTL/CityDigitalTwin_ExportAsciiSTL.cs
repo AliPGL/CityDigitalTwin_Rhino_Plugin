@@ -100,14 +100,18 @@ namespace AsciiSTLExporter
             if (string.IsNullOrWhiteSpace(path))
                 return Result.Cancel;
 
-            var meshParams = MeshingParameters.Default;
-            meshParams.JaggedSeams = false;
-            meshParams.RefineGrid = true;
-            meshParams.SimplePlanes = false;
-            meshParams.MinimumEdgeLength = 0.01;
-            meshParams.MaximumEdgeLength = 2.0;
-            meshParams.GridMinCount = 100;
-            meshParams.GridMaxCount = 10000;
+            var meshParams = new MeshingParameters
+            {
+                JaggedSeams = false,
+                RefineGrid = true,
+                SimplePlanes = true,
+                MinimumEdgeLength = 0.2,
+                MaximumEdgeLength = 5.0,
+                GridMinCount = 16,
+                GridMaxCount = 256,
+                Tolerance = 0.01,
+                RelativeTolerance = 0.01
+            };
 
             // Preprocess: apply rotation and center shift
             Transform rotation = new Transform(0);
@@ -139,7 +143,7 @@ namespace AsciiSTLExporter
             foreach (var (mesh, _) in allMeshes)
                 bbox = BoundingBox.Union(bbox, mesh.GetBoundingBox(true));
 
-            var centerShift = Transform.Translation(-bbox.Center.X, -bbox.Center.Y, -bbox.Center.Z);
+            var centerShift = Transform.Translation(-bbox.Center.X, 0, -bbox.Center.Z);
 
             // Apply center shift
             foreach (var (mesh, _) in allMeshes)
@@ -180,16 +184,45 @@ namespace AsciiSTLExporter
                         var B = mesh.Vertices[face.B];
                         var C = mesh.Vertices[face.C];
 
-                        var normal = Vector3d.CrossProduct(B - A, C - A);
-                        normal.Unitize();
+                        // Case 1: Entirely below
+                        if (A.Y < 0 && B.Y < 0 && C.Y < 0)
+                            continue;
 
-                        writer.WriteLine($"  facet normal {normal.X} {normal.Y} {normal.Z}");
-                        writer.WriteLine("    outer loop");
-                        writer.WriteLine($"      vertex {A.X} {A.Y} {A.Z}");
-                        writer.WriteLine($"      vertex {B.X} {B.Y} {B.Z}");
-                        writer.WriteLine($"      vertex {C.X} {C.Y} {C.Z}");
-                        writer.WriteLine("    endloop");
-                        writer.WriteLine("  endfacet");
+                        // Case 2: Entirely above
+                        if (A.Y >= 0 && B.Y >= 0 && C.Y >= 0)
+                        {
+                            WriteTriangle(writer, A, B, C);
+                            continue;
+                        }
+
+                        // Case 3: Intersecting y=0 plane
+                        var above = new List<Point3d>();
+                        var below = new List<Point3d>();
+
+                        foreach (var pt in new[] { A, B, C })
+                        {
+                            if (pt.Y >= 0) above.Add(pt);
+                            else below.Add(pt);
+                        }
+
+                        if (above.Count == 1 && below.Count == 2)
+                        {
+                            // One point above → clip into one triangle
+                            var p0 = above[0];
+                            var i1 = InterpolateY0(p0, below[0]);
+                            var i2 = InterpolateY0(p0, below[1]);
+                            WriteTriangle(writer, p0, i1, i2);
+                        }
+                        else if (above.Count == 2 && below.Count == 1)
+                        {
+                            // Two points above → clip into two triangles
+                            var p0 = above[0];
+                            var p1 = above[1];
+                            var i0 = InterpolateY0(p0, below[0]);
+                            var i1 = InterpolateY0(p1, below[0]);
+                            WriteTriangle(writer, p0, p1, i0);
+                            WriteTriangle(writer, p1, i1, i0);
+                        }
                     }
 
                     writer.WriteLine($"endsolid {name}");
@@ -239,6 +272,30 @@ namespace AsciiSTLExporter
                 return Mesh.CreateFromBrep(surface.ToBrep(), mp);
 
             return null;
+        }
+
+        private Point3d InterpolateY0(Point3d a, Point3d b)
+        {
+            double t = (0 - a.Y) / (b.Y - a.Y);
+            return new Point3d(
+                a.X + t * (b.X - a.X),
+                0,
+                a.Z + t * (b.Z - a.Z)
+            );
+        }
+
+        private void WriteTriangle(StreamWriter writer, Point3d a, Point3d b, Point3d c)
+        {
+            var normal = Vector3d.CrossProduct(b - a, c - a);
+            normal.Unitize();
+
+            writer.WriteLine($"  facet normal {normal.X} {normal.Y} {normal.Z}");
+            writer.WriteLine("    outer loop");
+            writer.WriteLine($"      vertex {a.X} {a.Y} {a.Z}");
+            writer.WriteLine($"      vertex {b.X} {b.Y} {b.Z}");
+            writer.WriteLine($"      vertex {c.X} {c.Y} {c.Z}");
+            writer.WriteLine("    endloop");
+            writer.WriteLine("  endfacet");
         }
     }
 }
