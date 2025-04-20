@@ -15,7 +15,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Release")]
 [assembly: System.Reflection.AssemblyDescriptionAttribute("Description of ExportAsciiSTL")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0+a4f22fcb9d901cf1d5f03408616c4b22c3b8ea83")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0+f92324854492c86e526cf258e99d0ebeac25669e")]
 [assembly: System.Reflection.AssemblyProductAttribute("CityDigitalTwin_ExportAsciiSTL")]
 [assembly: System.Reflection.AssemblyTitleAttribute("CityDigitalTwin_ExportAsciiSTL")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

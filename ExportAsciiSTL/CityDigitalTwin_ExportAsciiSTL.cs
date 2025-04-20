@@ -131,8 +131,34 @@ namespace AsciiSTLExporter
                     foreach (var m in meshes)
                     {
                         m.Faces.ConvertQuadsToTriangles();
+                        m.UnifyNormals(); // Ensure consistent winding
                         m.Normals.ComputeNormals();
                         m.Transform(rotation);
+
+                        // Flip normals for grounds and roads if they point downward in the transformed system
+                        if (category == "grounds" || category == "roads" || category == "waters" || category == "grasses")
+                        {
+                            for (int i = 0; i < m.Faces.Count; i++)
+                            {
+                                var normal = m.FaceNormals[i];
+                                // In the transformed system, Y is up. If the Y component of the normal is negative, flip the face.
+                                if (normal.Y < 0)
+                                {
+                                    // Flip the face by reversing the vertex order (for triangles)
+                                    var face = m.Faces[i];
+                                    if (face.IsTriangle)
+                                    {
+                                        // Swap two vertices to reverse the winding order (e.g., swap B and C)
+                                        m.Faces[i] = new MeshFace(face.A, face.C, face.B);
+                                        // Recompute the normal for this face
+                                        m.FaceNormals[i] = -normal; // Flip the normal
+                                    }
+                                }
+                            }
+                            // Recompute normals to ensure consistency
+                            m.Normals.ComputeNormals();
+                        }
+
                         allMeshes.Add((m, category));
                     }
                 }
@@ -176,8 +202,9 @@ namespace AsciiSTLExporter
                     string name = $"{baseName}{categoryCounters[category]++}";
                     writer.WriteLine($"solid {name}");
 
-                    foreach (var face in mesh.Faces)
+                    foreach (var faceIndex in Enumerable.Range(0, mesh.Faces.Count))
                     {
+                        var face = mesh.Faces[faceIndex];
                         if (!face.IsTriangle) continue;
 
                         var A = mesh.Vertices[face.A];
@@ -191,7 +218,7 @@ namespace AsciiSTLExporter
                         // Case 2: Entirely above
                         if (A.Y >= 0 && B.Y >= 0 && C.Y >= 0)
                         {
-                            WriteTriangle(writer, A, B, C);
+                            WriteTriangle(writer, mesh, faceIndex, A, B, C);
                             continue;
                         }
 
@@ -207,21 +234,19 @@ namespace AsciiSTLExporter
 
                         if (above.Count == 1 && below.Count == 2)
                         {
-                            // One point above → clip into one triangle
                             var p0 = above[0];
                             var i1 = InterpolateY0(p0, below[0]);
                             var i2 = InterpolateY0(p0, below[1]);
-                            WriteTriangle(writer, p0, i1, i2);
+                            WriteTriangle(writer, mesh, faceIndex, p0, i1, i2); // Use original face normal
                         }
                         else if (above.Count == 2 && below.Count == 1)
                         {
-                            // Two points above → clip into two triangles
                             var p0 = above[0];
                             var p1 = above[1];
                             var i0 = InterpolateY0(p0, below[0]);
                             var i1 = InterpolateY0(p1, below[0]);
-                            WriteTriangle(writer, p0, p1, i0);
-                            WriteTriangle(writer, p1, i1, i0);
+                            WriteTriangle(writer, mesh, faceIndex, p0, p1, i0); // Use original face normal
+                            WriteTriangle(writer, mesh, faceIndex, p1, i1, i0); // Use original face normal
                         }
                     }
 
@@ -284,10 +309,9 @@ namespace AsciiSTLExporter
             );
         }
 
-        private void WriteTriangle(StreamWriter writer, Point3d a, Point3d b, Point3d c)
+        private void WriteTriangle(StreamWriter writer, Mesh mesh, int faceIndex, Point3d a, Point3d b, Point3d c)
         {
-            var normal = Vector3d.CrossProduct(b - a, c - a);
-            normal.Unitize();
+            var normal = mesh.FaceNormals[faceIndex]; // Use the precomputed face normal
 
             writer.WriteLine($"  facet normal {normal.X} {normal.Y} {normal.Z}");
             writer.WriteLine("    outer loop");
