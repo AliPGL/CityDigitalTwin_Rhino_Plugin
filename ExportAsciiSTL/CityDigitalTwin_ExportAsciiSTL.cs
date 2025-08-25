@@ -244,19 +244,20 @@ namespace AsciiSTLExporter
                         if (!categoryCounters.ContainsKey(category))
                             categoryCounters[category] = 1;
 
-                        string baseName;
-                        switch (category)
+                        var baseNameMap = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
                         {
-                            case "roads":
-                                baseName = "highway";
-                                break;
-                            case "other":
-                                baseName = "other";
-                                break;
-                            default:
-                                baseName = category.Substring(0, category.Length - 1);
-                                break;
-                        }
+                            ["buildings"] = "building",
+                            ["trees"] = "tree",
+                            ["grasses"] = "grass",
+                            ["waters"] = "waterway",
+                            ["grounds"] = "ground",
+                            ["roads"] = "highway",
+                            ["other"] = "building", // convert all "other" to building
+                        };
+
+                        string baseName = baseNameMap.TryGetValue(category, out var mapped)
+                            ? mapped
+                            : "building"; // default fallback is also building
 
                         string name = $"{baseName}{categoryCounters[category]++}";
 
